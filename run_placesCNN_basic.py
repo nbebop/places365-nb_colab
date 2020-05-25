@@ -10,6 +10,7 @@ from torchvision import transforms as trn
 from torch.nn import functional as F
 import os
 from PIL import Image
+import csv
 
 # th architecture to use
 arch = 'resnet50'
@@ -44,11 +45,29 @@ classes = list()
 with open(file_name) as class_file:
     for line in class_file:
         classes.append(line.strip().split(' ')[0][3:])
+csv_header = classes
 classes = tuple(classes)
+
+
+"""
+Folder structure:
+content
+ |
+ +-- downloaded_videos
+ |
+ +-- frames
+ |  |
+ |  +-- folder with frames inside
+ |
+ +-- places365-nb_colab
+ |  |
+ |  +-- run_placesCNN_basic.py
+"""
 
 # load the test image
 #frame_folder = os.path.join('..', os.path.dirname(os.getcwd()), 'frames') if it is in a folder
-frame_folder = os.path.join(os.getcwd(), 'frames') #if only the file is uploaded 
+frame_folder = os.path.join(os.getcwd(), 'frames') #if only the file is uploaded
+final_predictions = list()
 
 for video_folder in os.listdir('frames'):
     for frame in os.listdir(os.path.join(frame_folder, video_folder)):
@@ -62,7 +81,16 @@ for video_folder in os.listdir('frames'):
         h_x = F.softmax(logit, 1).data.squeeze()
         probs, idx = h_x.sort(0, True)
 
-        print('{} prediction on {}'.format(arch,img_name))
-        # output the prediction
-        for i in range(0, 5):
-            print('{:.3f} -> {}'.format(probs[i], classes[idx[i]]))
+        probs_as_list = probs.squeeze().tolist()
+        final_predictions.append(probs_as_list)
+
+        #final_predictions.append(list(zip(classes, probs_as_list))) for testing
+#print(final_predictions) also for tsting
+
+#write predictions to file
+csv_file = 'scene_prediction_values.csv'
+
+with open(csv_file, 'w+', newline='') as csv_file:
+    writer = csv.writer(csv_file)
+    writer.writerow(csv_header)
+    writer.writerows(final_predictions)
