@@ -11,6 +11,7 @@ from torch.nn import functional as F
 import os
 from PIL import Image
 import csv
+import pandas as pd
 
 # th architecture to use
 arch = 'resnet50'
@@ -45,9 +46,7 @@ classes = list()
 with open(file_name) as class_file:
     for line in class_file:
         classes.append(line.strip().split(' ')[0][3:])
-csv_header = classes
 classes = tuple(classes)
-
 
 """
 Folder structure:
@@ -65,13 +64,14 @@ content
 """
 
 # load the test image
-#frame_folder = os.path.join('..', os.path.dirname(os.getcwd()), 'frames') if it is in a folder
 frame_folder = os.path.join(os.getcwd(), 'frames') #if only the file is uploaded
 final_predictions = list()
+video_df_colnames = pd.concat([pd.Series(['media_id', 'frame_nr']), pd.Series(classes)])
 
 for video_folder in os.listdir('frames'):
+    media_id = video_folder
     for frame in os.listdir(os.path.join(frame_folder, video_folder)):
-
+        frame_nr = frame[frame.rfind('_')+1:-4]
         img_name = os.path.join(frame_folder, video_folder, frame)
         img = Image.open(img_name)
         input_img = V(centre_crop(img).unsqueeze(0))
@@ -82,15 +82,7 @@ for video_folder in os.listdir('frames'):
         probs, idx = h_x.sort(0, True)
 
         probs_as_list = probs.squeeze().tolist()
-        final_predictions.append(probs_as_list)
+        final_predictions.append([media_id, frame_nr]+probs_as_list)
 
-        #final_predictions.append(list(zip(classes, probs_as_list))) for testing
-#print(final_predictions) also for tsting
-
-#write predictions to file
-csv_file = 'scene_prediction_values.csv'
-
-with open(csv_file, 'w+', newline='') as csv_file:
-    writer = csv.writer(csv_file)
-    writer.writerow(csv_header)
-    writer.writerows(final_predictions)
+df = pd.DataFrame(final_predictions, columns=video_df_colnames)
+df.to_csv('scene_prediction_values.csv')
