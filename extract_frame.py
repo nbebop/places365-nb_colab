@@ -26,7 +26,7 @@ def extract_frames(frame_folder, frame_rate, videos_path):
                 os.mkdir(video_frame_folder)
 
             video_capture = cv2.VideoCapture(os.path.join(videos_path, video_name))
-            current_frame = 1
+            current_frame = 0 #to match existing code, starting frame is 0
             sec = 0
 
             #read each frame and save it
