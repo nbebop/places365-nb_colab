@@ -85,4 +85,4 @@ for video_folder in os.listdir('frames'):
         final_predictions.append([media_id, frame_nr]+probs_as_list)
 
 df = pd.DataFrame(final_predictions, columns=video_df_colnames)
-df.to_csv('scene_prediction_values.csv')
+df.to_csv('scene_prediction_values.csv', index=False)
