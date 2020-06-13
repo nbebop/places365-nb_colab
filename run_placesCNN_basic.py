@@ -63,7 +63,6 @@ content
  |  +-- run_placesCNN_basic.py
 """
 
-# load the test image
 frame_folder = os.path.join(os.getcwd(), 'frames') #if only the file is uploaded
 final_predictions = list()
 video_df_colnames = pd.concat([pd.Series(['media_id', 'frame_nr']), pd.Series(classes)])
